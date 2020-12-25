@@ -112,7 +112,7 @@ int main() {
 
 
         if(SAVE_FILE == true) {
-            deltaTime += 0.005;
+            deltaTime += 0.01;
         }else{
             deltaTime = 15 * frameTime.restart().asSeconds();
         }

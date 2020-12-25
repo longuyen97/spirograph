@@ -15,15 +15,15 @@ typedef float fp32_t;
 #define BLACK sf::Color{0, 0, 0, 0}
 #define WHITE sf::Color{255, 255, 255, 50}
 #define START_BLUE sf::Color(34, 34, 125, 10)
-#define END_BLUE sf::Color(334, 125, 34, 255)
-#define SAVE_FILE 0
-#define SPEED 10
+#define END_BLUE sf::Color(34, 125, 34, 255)
+#define SAVE_FILE 1
+#define SPEED 25
 
 
 int main() {
     //Setting
     sf::ContextSettings contextSettings;
-    contextSettings.antialiasingLevel = 64;
+    contextSettings.antialiasingLevel = 32;
     contextSettings.depthBits = 32;
 
     // Initialize context
@@ -37,7 +37,7 @@ int main() {
     int32_t fileName = 0;
 
     // Initialize parameters
-    int32_t arms = 10;
+    int32_t arms = 2;
     std::vector<fp32_t> radii;
     std::vector<fp32_t> alphas;
     std::vector<bool> directions;
@@ -45,7 +45,7 @@ int main() {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
     std::default_random_engine gen(ms);
-    std::uniform_real_distribution<> radii_dist(40.0, 100.0);
+    std::uniform_real_distribution<> radii_dist(100.0, 300.0);
     std::uniform_real_distribution<> alpha_dist(10, 350.0);
     std::uniform_real_distribution<> direction_dist(0, 100);
     for (int32_t i = 0; i < arms; i++) {
@@ -60,7 +60,7 @@ int main() {
     painter.append(sf::Vertex(sf::Vector2f(CENTER), START_BLUE));
 
     sf::Clock clock;
-    fp32_t time;
+    fp32_t time = 0;
     // Main loop
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
@@ -148,7 +148,7 @@ int main() {
             std::stringstream ss;
             ss << std::to_string(fileName++) << ".png";
             texture.copyToImage().saveToFile(ss.str());
-            time += 1;
+            time += 5;
         }
     }
 }

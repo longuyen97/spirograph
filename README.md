@@ -5,7 +5,13 @@ with symmetric pattern.
 
 ### Two circles
 
-![](screenshots/001.gif)
+<table border="1" width="100%">
+    <tr>
+        <td><img src="screenshots/001.gif" width="1000"></td>
+        <td><img src="screenshots/002.gif" width="1000"></td>
+        <td><img src="screenshots/003.gif" width="1000"></td>
+    </tr>
+</table>
 
 ### Dependencies
 
