@@ -37,18 +37,21 @@ int main() {
     int32_t fileName = 0;
 
     // Initialize parameters
-    int32_t arms = 2;
+    int32_t arms = 10;
     std::vector<fp32_t> radii;
     std::vector<fp32_t> alphas;
+    std::vector<bool> directions;
 
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
     std::default_random_engine gen(ms);
     std::uniform_real_distribution<> radii_dist(40.0, 100.0);
     std::uniform_real_distribution<> alpha_dist(10, 350.0);
+    std::uniform_real_distribution<> direction_dist(0, 100);
     for (int32_t i = 0; i < arms; i++) {
         radii.push_back(radii_dist(gen));
         alphas.push_back(alpha_dist(gen));
+        directions.push_back(direction_dist(gen) > 50);
     }
 
     // End visualization
@@ -79,7 +82,11 @@ int main() {
                 sf::RectangleShape line;
                 line.setPosition(CENTER);
                 line.setFillColor(WHITE);
-                line.rotate(alphas[i] + time);
+                if (directions[i]) {
+                    line.rotate(alphas[i] + time);
+                } else {
+                    line.rotate(alphas[i] - time);
+                }
                 line.setSize(sf::Vector2f(radii[i], 1));
 
                 circles.push_back(std::move(circle));
@@ -92,12 +99,17 @@ int main() {
                 line.setPosition(lines.back().getPosition() + sf::Vector2f{delta_x, delta_y});
                 line.setFillColor(WHITE);
                 for (int32_t j = 0; j <= i; j++) {
-                    line.rotate(alphas[j] + time);
+                    if (directions[j]) {
+                        line.rotate(alphas[j] + time);
+                    } else {
+                        line.rotate(alphas[j] - time);
+                    }
                 }
                 line.setSize(sf::Vector2f(radii[i], 1));
 
                 sf::CircleShape circle(radii[i]);
-                circle.setPosition(lines.back().getPosition() + sf::Vector2f{delta_x, delta_y} - sf::Vector2f{radii[i], radii[i]});
+                circle.setPosition(
+                        lines.back().getPosition() + sf::Vector2f{delta_x, delta_y} - sf::Vector2f{radii[i], radii[i]});
                 circle.setFillColor(BLACK);
                 circle.setOutlineColor(WHITE);
                 circle.setOutlineThickness(1);

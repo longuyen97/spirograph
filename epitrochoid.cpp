@@ -1,105 +1,120 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <random>
+#include <sstream>
+#include <chrono>
 
 typedef float fp32_t;
 
 #define PI 3.14159265
-#define DEG2RAD(x) ((x + 90)*PI/180)
+#define DEG2RAD(x) ((x)*PI/180)
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 1200
 #define CENTER sf::Vector2f{WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2}
 #define BLACK sf::Color{0, 0, 0, 0}
 #define WHITE sf::Color{255, 255, 255, 50}
-#define START_BLUE sf::Color(34, 34, 125, 10)
-#define END_BLUE sf::Color(334, 125, 34, 255)
-#define SAVE_FILE 0
+#define START_BLUE sf::Color(125, 34, 34, 10)
+#define END_BLUE sf::Color(34, 125, 34, 255)
+#define SAVE_FILE 1
 #define SPEED 10
 
+
+using namespace std;
+using namespace sf;
+
 int main() {
-    // Initialize context
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Spirograph", sf::Style::Default);
-    sf::Event event;
+    ContextSettings settings;
+    settings.depthBits = 32;
+    settings.sRgbCapable = true;
+    settings.antialiasingLevel = 64;
+    RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Spirograph", Style::Default, settings);
 
-    fp32_t firstArm = 100;
-    fp32_t secondArm = 50;
-    fp32_t thirdArm = 150;
-    fp32_t firstTheta = 40;
-    fp32_t secondTheta = -40;
-    fp32_t thirdTheta = -20;
+    sf::Texture texture;
+    texture.create(window.getSize().x, window.getSize().y);
 
-    sf::VertexArray tracer(sf::LineStrip);
-    sf::VertexArray painter(sf::TriangleFan);
-    painter.append(sf::Vertex(sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2), sf::Color(34, 34, 125, 5)));
+    // Initialize parameters
+    int32_t arm_count = 4;
 
-    sf::Clock clock;
-    fp32_t time;
-    // Main loop
+    vector<int> radii(arm_count);
+    vector<int> thetas(arm_count);
+    vector<RectangleShape> arms(arm_count);
+
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
+    std::mt19937 gen(ms); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> radius_dist(-100, 100);
+    std::uniform_real_distribution<> theta_dist(-40, 40);
+    for (int &r : radii) {
+        r = radius_dist(gen);
+    }
+
+    for (int &t : thetas) {
+        t = theta_dist(gen);
+    }
+
+    for (int i = 0; i < arms.size(); i++) {
+        arms[i].setSize(Vector2f(1, radii[i]));
+        arms[i].setOrigin(0, radii[i]);
+        arms[i].setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+        arms[i].setFillColor(Color(125, 120, 175));
+    }
+
+    VertexArray tracer(LineStrip);
+    VertexArray painter(TriangleFan);
+    painter.append(Vertex(Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2), START_BLUE));
+
+    Clock frameTime;
+    float deltaTime = 0;
+    Event event;
+
+    int filename;
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            if (Keyboard::isKeyPressed(Keyboard::Escape)) {
                 break;
             }
         }
 
-        // First layer
-        sf::CircleShape firstCircle(firstArm);
-        firstCircle.setPosition(WINDOW_WIDTH / 2 - firstArm, WINDOW_HEIGHT / 2 - firstArm);
-        firstCircle.setFillColor(sf::Color{0, 0, 0, 0});
-        firstCircle.setOutlineColor(sf::Color::White);
-        firstCircle.setOutlineThickness(1);
+        for (int i = 0; i < arms.size(); i++) {
+            if (i >= 1) {
+                fp32_t delta_x = radii[i - 1] * sin(DEG2RAD(arms[i - 1].getRotation()));
+                fp32_t delta_y = radii[i - 1] * -cos(DEG2RAD(arms[i - 1].getRotation()));
+                arms[i].setPosition(arms[i - 1].getPosition() + Vector2f(delta_x, delta_y));
+            }
+            arms[i].rotate(thetas[i] * deltaTime);
+        }
 
-        sf::RectangleShape firstLine;
-        firstLine.setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-        firstLine.setFillColor(sf::Color::White);
-        firstLine.rotate(firstTheta + time);
-        firstLine.setSize(sf::Vector2f(firstArm, 1));
+        fp32_t delta_x = radii.back() * sin(DEG2RAD(arms.back().getRotation()));
+        fp32_t delta_y = radii.back() * -cos(DEG2RAD(arms.back().getRotation()));
+        Vertex vertex(arms.back().getPosition() + Vector2f(delta_x, delta_y));
 
-        // Second layer
-        sf::RectangleShape secondLine;
-        fp32_t delta_x = firstArm * sin(DEG2RAD(firstLine.getRotation()));
-        fp32_t delta_y = firstArm * -cos(DEG2RAD(firstLine.getRotation()));
+        tracer.append(vertex);
+        vertex.color = END_BLUE;
+        painter.append(vertex);
 
-        secondLine.setPosition(firstLine.getPosition() + sf::Vector2f{delta_x, delta_y});
-        secondLine.setFillColor(sf::Color::White);
-        secondLine.rotate(firstTheta + time);
-        secondLine.rotate(secondTheta + time);
-        secondLine.setSize(sf::Vector2f(secondArm, 1));
+        window.clear(Color::Black);
+        window.draw(painter);
+        window.draw(tracer);
+        for (auto &arm : arms) {
+            window.draw(arm);
+            sf::Vertex point(arm.getPosition(), sf::Color::Red);
+            window.draw(&point, 1, sf::Points);
+        }
 
-        sf::CircleShape secondCircle(secondArm);
-        secondCircle.setPosition(secondLine.getPosition() + secondLine.getPoint(secondArm));
-        secondCircle.setFillColor(sf::Color{0, 0, 0, 0});
-        secondCircle.setOutlineColor(sf::Color::White);
-        secondCircle.setOutlineThickness(1);
-
-        // Third layer
-        sf::RectangleShape thirdLine;
-        delta_x = thirdArm * sin(DEG2RAD(secondLine.getRotation()));
-        delta_y = thirdArm * -cos(DEG2RAD(secondLine.getRotation()));
-
-        thirdLine.setPosition(secondLine.getPosition() + sf::Vector2f{delta_x, delta_y});
-        thirdLine.setFillColor(sf::Color::White);
-        thirdLine.rotate(firstTheta + time);
-        thirdLine.rotate(secondTheta + time);
-        thirdLine.rotate(thirdTheta + time);
-        thirdLine.setSize(sf::Vector2f(thirdArm, 1));
-
-        sf::CircleShape thirdCircle(thirdArm);
-        thirdCircle.setPosition(secondLine.getPosition() + sf::Vector2f{delta_x, delta_y} - sf::Vector2f{thirdArm, thirdArm});
-        thirdCircle.setFillColor(sf::Color{0, 0, 0, 0});
-        thirdCircle.setOutlineColor(sf::Color::White);
-        thirdCircle.setOutlineThickness(1);
-
-        // Display
-        window.clear(sf::Color::Black);
-        window.draw(firstCircle);
-        window.draw(secondCircle);
-        //window.draw(thirdCircle);
-        window.draw(firstLine);
-        window.draw(secondLine);
-        //window.draw(thirdLine);
         window.display();
 
-        time += 15 * clock.restart().asSeconds();
-        time = std::abs(time);
+        if(SAVE_FILE == true) {
+            std::stringstream ss;
+            texture.update(window);
+            ss << to_string(filename++) << ".png";
+            texture.copyToImage().saveToFile(ss.str());
+        }
+
+
+        if(SAVE_FILE == true) {
+            deltaTime += 0.005;
+        }else{
+            deltaTime = 15 * frameTime.restart().asSeconds();
+        }
     }
 }
