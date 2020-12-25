@@ -33,7 +33,7 @@ int main() {
     texture.create(window.getSize().x, window.getSize().y);
 
     // Initialize parameters
-    int32_t arm_count = 4;
+    int32_t arm_count = 2;
 
     vector<int> radii(arm_count);
     vector<int> thetas(arm_count);
@@ -42,7 +42,7 @@ int main() {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
     std::mt19937 gen(ms); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> radius_dist(-100, 100);
+    std::uniform_real_distribution<> radius_dist(-50, 300);
     std::uniform_real_distribution<> theta_dist(-40, 40);
     for (int &r : radii) {
         r = radius_dist(gen);
