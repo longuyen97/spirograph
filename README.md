@@ -1,7 +1,6 @@
 # Spirograph
 
-Visualize [spirograph](https://de.wikipedia.org/wiki/Spirograph_(Spielzeug)), a visually appealing toy
-with symmetric pattern.
+Breath slowly.
 
 ### Two circles
 
@@ -13,12 +12,13 @@ with symmetric pattern.
     </tr>
 </table>
 
-### Dependencies
+### Three circles
 
-This program was written originally on Linux Ubuntu 20.10 used the default GCC compiler. The following dependencies
-are needed to compile and run the software:
+<table border="1" width="100%">
+    <tr>
+        <td><img src="screenshots/004.gif" width="1000"></td>
+        <td><img src="screenshots/005.gif" width="1000"></td>
+        <td><img src="screenshots/006.gif" width="1000"></td>
+    </tr>
+</table>
 
-```
-SFML 2.5
-TGUI 0.9.0
-```

@@ -37,7 +37,7 @@ int main() {
     int32_t fileName = 0;
 
     // Initialize parameters
-    int32_t arms = 2;
+    int32_t arms = 3;
     std::vector<fp32_t> radii;
     std::vector<fp32_t> alphas;
     std::vector<bool> directions;
