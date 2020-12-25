@@ -6,7 +6,6 @@
 #include <chrono>
 
 typedef float fp32_t;
-typedef double fp64_t;
 
 #define PI 3.14159265
 #define DEG2RAD(x) ((x + 90)*PI/180)
@@ -17,7 +16,7 @@ typedef double fp64_t;
 #define WHITE sf::Color{255, 255, 255, 50}
 #define START_BLUE sf::Color(34, 34, 125, 10)
 #define END_BLUE sf::Color(334, 125, 34, 255)
-#define SAVE_FILE 1
+#define SAVE_FILE 0
 #define SPEED 10
 
 
@@ -38,7 +37,7 @@ int main() {
     int32_t fileName = 0;
 
     // Initialize parameters
-    int32_t arms = 7;
+    int32_t arms = 2;
     std::vector<fp32_t> radii;
     std::vector<fp32_t> alphas;
 
